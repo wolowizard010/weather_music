@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="text-center my-5">
+    <h1 class="display-5 fw-bold">WeatherMusic</h1>
+    <p class="fs-4 text-muted">Let the Music Play!</p>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8 col-lg-6">
+            <a href="{{ url_for('recommendations_page') }}" class="text-decoration-none">
+                <div class="card feature-card h-100 shadow-sm">
+                    <div class="card-body p-5 text-center">
+                        <i class="bi bi-music-note-beamed fs-1 text-primary"></i>
+                        <h2 class="card-title mt-3 text-nowrap">Recommend</h2>
+                        <p class="card-text">Get song recommendations based on your local weather.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center g-4">
+        <div class="col-md-5 col-lg-4">
+            <a href="{{ url_for('favorites_page') }}" class="text-decoration-none">
+                <div class="card feature-card h-100">
+                    <div class="card-body p-4 text-center">
+                        <i class="bi bi-heart-fill fs-2 text-danger"></i>
+                        <h3 class="card-title mt-3 h4">Favorites</h3>
+                        <p class="card-text small">View your saved songs.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-5 col-lg-4">
+            <a href="{{ url_for('recents_page') }}" class="text-decoration-none">
+                <div class="card feature-card h-100">
+                    <div class="card-body p-4 text-center">
+                        <i class="bi bi-clock-history fs-2 text-info"></i>
+                        <h3 class="card-title mt-3 h4">Recently Played</h3>
+                        <p class="card-text small">See your listening history.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

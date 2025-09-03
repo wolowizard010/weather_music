@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Recently Played</h2>
+    {% if recents %}
+        <ul class="list-group">
+            {% for song in recents %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="me-auto">
+                        <strong class="d-block">{{ song.title }}</strong>
+                        <small class="text-muted">{{ song.artist }}</small>
+                    </div>
+                    <div class="btn-group ms-3">
+                        {% set is_favorited = song.spotify_track_id in favorite_ids %}
+                        <button onclick="toggleFavorite(this, '{{ song.spotify_track_id }}', '{{ song.title | replace("'", "\\'") }}', '{{ song.artist | replace("'", "\\'") }}', '{{ song.url }}')" 
+                                class="btn btn-sm {{ 'btn-danger' if is_favorited else 'btn-outline-danger' }}">
+                            &hearts;
+                        </button>
+                        <a href="{{ song.url }}" target="_blank" class="btn btn-success btn-sm">Listen on Spotify</a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You haven't played any songs yet.</p>
+    {% endif %}
+
+<script>
+// This function adds/removes songs from your favorites
+function toggleFavorite(buttonElement, songId, title, artist, url) {
+    fetch('/toggle_favorite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            song_id: songId, title: title, artist: artist, url: url
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.favorited) {
+            buttonElement.classList.add('btn-danger');
+            buttonElement.classList.remove('btn-outline-danger');
+        } else {
+            buttonElement.classList.remove('btn-danger');
+            buttonElement.classList.add('btn-outline-danger');
+        }
+    });
+}
+</script>
+{% endblock %}

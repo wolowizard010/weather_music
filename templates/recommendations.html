@@ -1,0 +1,186 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div id="recommendation-container">
+        <div class="text-center">
+            <p>Getting your location to fetch recommendations...</p>
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables to keep track of the current state
+        let currentMood = '';
+        const songLimit = 12;
+
+        // This function runs when the page loads
+        window.onload = function() {
+            // Check if the browser supports Geolocation
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(fetchRecommendations, showError);
+            } else {
+                document.getElementById('recommendation-container').innerHTML = '<div class="alert alert-danger">Geolocation is not supported by this browser.</div>';
+            }
+        };
+
+        // Function to call our Flask backend with coordinates
+        function fetchRecommendations(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const url = `/get_recommendations?lat=${lat}&lon=${lon}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showError({ message: data.error });
+                        return;
+                    }
+                    displayRecommendations(data);
+                })
+                .catch(err => showError({ message: 'Failed to contact server.' }));
+        }
+
+        // Function to dynamically build and display the HTML
+        function displayRecommendations(data) {
+
+            // Store the mood so our refresh button can use it
+            currentMood = data.mood;
+
+            const container = document.getElementById('recommendation-container');
+
+            container.innerHTML = `
+                <div class="card text-center mb-4">
+                    <div class="card-header">Current Weather</div>
+                    <div class="card-body">
+                        <h5 class="card-title">${data.weather.city}</h5>
+                        <p class="card-text">
+                            <strong>Condition:</strong> ${data.weather.condition} | <strong>Temperature:</strong> ${data.weather.temp}°C
+                        </p>
+                        <p class="card-text fs-4">
+                            Which feels like a <span class="badge bg-primary">${data.mood}</span> kind of day.
+                        </p>
+                    </div>
+                </div>`;
+
+            let recommendationsHtml = `
+                <div class="recommendations">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h3>Here are your recommendations:</h3>
+                        <button onclick="refreshSongs()" class="btn btn-secondary btn-sm">Refresh</button>
+                    </div>
+                    <ul class="list-group" id="song-list">
+                        ${buildSongListHtml(data.songs)}
+                    </ul>
+                </div>`;
+
+            container.innerHTML += recommendationsHtml;
+        }
+        
+        function buildSongListHtml(songs) {
+            if (!songs || songs.length === 0) {
+                return '<li>Sorry, no more songs found for this mood.</li>';
+            }
+            let songsHtml = '';
+            songs.forEach(song => {
+                const safeTitle = song.title.replace(/'/g, "\\'");
+                const safeArtist = song.artist.replace(/'/g, "\\'");
+                songsHtml += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="me-auto">
+                            <strong class="d-block">${song.title}</strong>
+                            <small class="text-muted">${song.artist}</small>
+                        </div>
+                        <div class="btn-group ms-3">
+                            <button onclick="toggleFavorite(this, '${song.id}', '${safeTitle}', '${safeArtist}', '${song.url}')" class="btn btn-outline-danger btn-sm">
+                                &hearts;
+                            </button>
+                            <a href="${song.url}" target="_blank" onclick="logSongClick('${song.id}', '${safeTitle}', '${safeArtist}', '${song.url}')" class="btn btn-success btn-sm">Listen on Spotify</a>
+                        </div>
+                    </li>`;
+            });
+            return songsHtml;
+        }
+
+        function refreshSongs() {
+            const songListElement = document.getElementById('song-list');
+            songListElement.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>';
+
+            const url = `/refresh_songs?mood=${currentMood}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    songListElement.innerHTML = buildSongListHtml(data.songs);
+                })
+                .catch(err => {
+                    songListElement.innerHTML = '<li class="list-group-item list-group-item-danger">Failed to refresh songs.</li>';
+                });
+        }
+
+        function toggleFavorite(buttonElement, songId, title, artist, url) {
+            fetch('/toggle_favorite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    song_id: songId, title: title, artist: artist, url: url
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.favorited) {
+                    buttonElement.classList.add('btn-danger');
+                    buttonElement.classList.remove('btn-outline-danger');
+                } else {
+                    buttonElement.classList.remove('btn-danger');
+                    buttonElement.classList.add('btn-outline-danger');
+                }
+            });
+        }
+
+        function logSongClick(songId, title, artist, url) {
+        // We no longer need event.preventDefault() or window.open().
+        // We just send the log data with the 'keepalive' flag.
+            fetch('/log_click', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    song_id: songId,
+                    title: title,
+                    artist: artist,
+                    url: url
+                }),
+                // This magic flag tells the browser to keep this request alive
+                // in the background, even after you navigate to the new page.
+                keepalive: true
+            });
+            
+            // Now, we let the <a> tag do its job normally.
+        }
+
+        // Function to handle errors (e.g., user denies location access)
+        function showError(error) {
+            let message = "An unknown error occurred.";
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = "You denied the request for Geolocation. Cannot provide recommendations.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    message = "The request to get user location timed out.";
+                    break;
+            }
+            if (error.message) {
+                message = error.message;
+            }
+            document.getElementById('recommendation-container').innerHTML = `<div class="alert alert-danger">${message}</div>`;
+        }
+    </script>
+
+{% endblock %}

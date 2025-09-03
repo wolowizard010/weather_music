@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+    <div class="p-5 mb-4 rounded-3 text-center">
+        <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">WeatherMusic</h1>
+            <p class="col-md-8 fs-4 mx-auto">Get song recommendations based on your local weather. Login, register, or continue as a guest to get started.</p>
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-secondary btn-lg">Register</a>
+            <a href="{{ url_for('guest_login') }}" class="btn btn-info btn-lg">Continue as Guest</a>
+        </div>
+    </div>
+{% endblock %}

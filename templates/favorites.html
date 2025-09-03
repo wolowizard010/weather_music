@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Your Favorites</h2>
+    {% if favorites %}
+        <ul class="list-group" id="favorites-list">
+            {% for song in favorites %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="me-auto">
+                        <strong class="d-block">{{ song.title }}</strong>
+                        <small class="text-muted">{{ song.artist }}</small>
+                    </div>
+                    <div class="btn-group ms-3">
+                        <button onclick="removeFromFavorites(this, '{{ song.spotify_track_id }}')" class="btn btn-danger btn-sm">
+                            &times; </button>
+                        <a href="{{ song.url }}" target="_blank" onclick="logSongClick('{{ song.spotify_track_id }}', '{{ song.title | replace("'", "\\'") }}', '{{ song.artist | replace("'", "\\'") }}', '{{ song.url }}')" class="btn btn-success btn-sm">Listen on Spotify</a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You haven't favorited any songs yet.</p>
+    {% endif %}
+
+<script>
+// This function logs the click to your 'recents'
+function logSongClick(songId, title, artist, url) {
+    fetch('/log_click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ song_id: songId, title: title, artist: artist, url: url }),
+        keepalive: true
+    });
+}
+
+// This function removes the song from favorites and from the page
+function removeFromFavorites(buttonElement, songId) {
+    fetch('/toggle_favorite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ song_id: songId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.favorited) {
+            // Remove the song's list item from the page
+            buttonElement.closest('li').remove();
+        }
+    });
+}
+</script>
+{% endblock %}

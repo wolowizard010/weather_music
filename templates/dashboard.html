@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+{% block body_class %}dashboard-page{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Admin Dashboard</h2>
+    
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">Session Types</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Registered Users</span>
+                            <span class="badge bg-primary rounded-pill">{{ session_types.registered }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Guest Users</span>
+                            <span class="badge bg-secondary rounded-pill">{{ session_types.guest }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">Sessions Per Day (Last 10)</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for day, count in sessions_per_day %}
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>{{ day }}</span>
+                                <span class="badge bg-info rounded-pill">{{ count }}</span>
+                            </li>
+                        {% else %}
+                            <li class="list-group-item">No session data yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">Peak Usage Hour by Day</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for day, data in peak_hours_by_day.items() %}
+                            <li class="list-group-item">
+                                <strong>{{ day }}:</strong> Hour {{ data.hour }}:00 - {{ data.hour + 1 }}:00
+                                <span class="badge bg-warning text-dark rounded-pill float-end">{{ data.count }} sessions</span>
+                            </li>
+                        {% else %}
+                             <li class="list-group-item">No session data yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Popular Moods</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for mood, count in popular_moods %}
+                            <li class="list-group-item">{{ mood }}: {{ count }} times</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Most Popular Songs</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for title, count in popular_songs %}
+                            <li class="list-group-item">{{ title }}: {{ count }} hits</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

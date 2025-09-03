@@ -1,0 +1,80 @@
+
+body {
+    font-family: sans-serif; 
+    margin: 0; 
+    padding: 20px;
+    color: #dee2e6;
+    /* background */
+    background-color: #212529;
+    background-image: url('../img/background.png') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Navigation taskbar */
+
+nav { 
+    background-color: #333;
+    margin: 10px 15px;
+    padding: 1rem; 
+}
+
+nav a { 
+    color: white; 
+    margin: 0 15px; 
+    text-decoration: none; 
+}
+
+/* Page-specific backgrounds */
+
+body.landing-page {
+    background-image: url('../img/landing.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+body.login-page {
+    background-image: url('../img/landing.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+body.register-page {
+    background-image: url('../img/landing.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+body.dashboard-page {
+    background-image: url('../img/admin.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Main content overlay */
+
+.container { 
+    max-width: 1000px; 
+    margin: 20px auto; 
+    padding: 20px; 
+    border-radius: 8px; 
+}
+
+.feature-card {
+    transition: transform .2s, box-shadow .2s;
+}
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 6px 25px rgba(255, 255, 255, 0.07);
+}
+
+/* Login/logout notifications */
+
+.flash { 
+    padding: 1rem; 
+    margin-bottom: 1rem; 
+    border-radius: 4px; 
+}
+
+.flash.success { 
+    color: #155724; 
+}
+
+.flash.error { 
+    color: #721c24; 
+}
